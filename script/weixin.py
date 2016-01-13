@@ -21,6 +21,27 @@ def check_signature(signature, timestamp, nonce):
     else:
         return False
 
+class favicon:
+    def GET(self, name):
+        content = None
+        with open(os.path.join(ico_path, name), 'rb') as f:
+            content = f.read()
+        web.header('content-type', 'image/x-icon')
+        return f.read()
+
+#class image:
+#    def GET(self, name):
+#        ext = os.path.splitext(name)
+#        content = None
+#        with open(os.path.join(ico_path, name), 'rb') as f:
+#            content = f.read()
+#        web.header('content-type', 'image/x-icon')
+#        return f.read()
+
+class index():
+    def GET(self, query=''):
+        return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).index(None)
+
 class authentication:
     def GET(self):
         get_data = web.input()
@@ -33,6 +54,8 @@ class authentication:
 
 urls = (
     '/authentication', authentication,
+    '/favicon.ico', favicon,
+    '/(.*)', index,
 
 )
 app = web.application(urls, globals())
