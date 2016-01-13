@@ -7,8 +7,12 @@ import hashlib
 try:
     import conf
     token = conf.token
+    ico_path = conf.icon_path
+    res_path = conf.res_path
 except:
     token = 'test token'
+    ico_path = './'
+    res_path = './res'
 
 def check_signature(signature, timestamp, nonce):
     sha1 = hashlib.sha1()
@@ -22,21 +26,20 @@ def check_signature(signature, timestamp, nonce):
         return False
 
 class favicon:
-    def GET(self, name):
+    def GET(self):
         content = None
-        with open(os.path.join(ico_path, name), 'rb') as f:
+        with open(os.path.join(ico_path, 'favicon.ico'), 'rb') as f:
             content = f.read()
         web.header('content-type', 'image/x-icon')
-        return f.read()
+        return content
 
-#class image:
-#    def GET(self, name):
-#        ext = os.path.splitext(name)
-#        content = None
-#        with open(os.path.join(ico_path, name), 'rb') as f:
-#            content = f.read()
-#        web.header('content-type', 'image/x-icon')
-#        return f.read()
+class image:
+    def GET(self, name, ext):
+        content = None
+        with open(os.path.join(res_path, name + '.' + ext), 'rb') as f:
+            content = f.read()
+        web.header('content-type', 'image/%s' % ext)
+        return content
 
 class index():
     def GET(self, query=''):
@@ -55,6 +58,7 @@ class authentication:
 urls = (
     '/authentication', authentication,
     '/favicon.ico', favicon,
+    '/(.*).(jpg)', image,
     '/(.*)', index,
 
 )
