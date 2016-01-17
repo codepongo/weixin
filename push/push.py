@@ -1,3 +1,4 @@
+#coding:utf8
 import urllib
 import urllib2
 import cookielib
@@ -43,9 +44,8 @@ def transfer(url, get = None, post = None, header = None):
         get.update(query)
         get.update({'f':'json'})
         url = url + '?' + urllib.urlencode(get)
-
     if post != None:
-        if type(post) == 'dict':
+        if type(post) == dict:
             post.update(query)
             post.update({'ajax':1, 'random':random.random()})
             if 't' not in post.keys():
@@ -54,6 +54,7 @@ def transfer(url, get = None, post = None, header = None):
         req = urllib2.Request(url, post)
     else:
         req = urllib2.Request(url)
+
     req.add_header('Referer', 'https://mp.weixin.qq.com')
 
     if header != None:
@@ -95,16 +96,77 @@ def upload_image_as_cover(path):
     post, header = poster.encode.multipart_encode(field)
     rep = transfer(url, get, post, header)
     return rep['content']
+def add_message(cover, title, content, digest='', author='', url=''):
+    url = 'https://mp.weixin.qq.com/cgi-bin/operate_appmsg'
+    post = {
+            'AppMsgId': '', 
+            'count': 1, 
+            'sub': 'create',
+            'type': 10,
+            'title0':title,
+            'content0':content,
+            'digest0':digest,
+            'author0':author,
+            'fileid0':cover,
+            'sourceurl0':url,
+            'show_cover_pic0':0,
+            'shortvideofileid0':'',
+            'copyright_type0':0,
+            'releasefirst0':0,
+            'can_reward0':0,
+            'reward_wording0':'',
+            'reprint_permit_type0':0,
+            'original_article_type0':'',
+            'need_open_comment0':1,
 
-def send_message_to_all():
-    pass
+            }
+    rep = transfer(url, post=post)
+    return rep['appMsgId']
+def send_mass_message(msg_id, gender=0, group_id=-1):
+    url = 'https://mp.weixin.qq.com/cgi-bin/masssendpage'
+    get = {
+            't':'mass/send',
+    }
+    rep = transfer(url, get)
+    op = rep['operation_seq']
+    #administractor's certification 
+
+
+
+title = '''hello, wechat's gong zhong hao'''
+content = '''
+这个是猪火腿的公众号第一条消息。用于测试程序。
+<br />
+代码可以在https://github.com/codepongo/weixin可以找到。
+<br />
+目前，程序只能完成：
+<ul>
+ <li>登陆，登出</li>
+ <li>上传图片</li>
+ <li>增加图文消息</li>
+</ul>
+<b>无法自动推送消息:(</b>
+<br />
+<br />
+Hi, this message is the first message from Codepongo's Gong Zhong Hao, and it is for testing the program.
+<br />
+The source code is hosted in https://github.com/codepongo/weixin.
+<br />
+now, the function of it:
+<ul>
+  <li>login and logout</li>
+  <li>upload image resource</li>
+  <li> add message with image to wechat's platform</li>
+</ul>
+<b>but, it has not publish the message yet. :(</b>
+'''
 
 if __name__ ==  '__main__':
     import sys
     token = login(sys.argv[1], sys.argv[2])
-    media_id = upload_image_as_cover(os.path.join('res', 'qrcode_for_gh_de3d190f1f61_258.jpg'))
-   # if media_id == None:
-   # sys.exit(0)
+    result = {}
+    result['cover'] = upload_image_as_cover(os.path.join('res', 'qrcode_for_gh_de3d190f1f61_258.jpg'))
+    result['appMsgId'] = add_message(result['cover'], title, content)
     logout()
 
 
