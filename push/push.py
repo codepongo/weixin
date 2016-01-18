@@ -92,10 +92,12 @@ def upload_image_as_cover(path):
         'ticket':media,
         'token':token,
     }
-    field = {'file': open(path, 'rb')}
+    field = {'file': open(path, 'rb'), 'filename':'test.jpg'}
     post, header = poster.encode.multipart_encode(field)
     rep = transfer(url, get, post, header)
     return rep['content']
+
+
 def add_message(cover, title, content, digest='', author='', url=''):
     url = 'https://mp.weixin.qq.com/cgi-bin/operate_appmsg'
     post = {
@@ -131,6 +133,30 @@ def send_mass_message(msg_id, gender=0, group_id=-1):
     op = rep['operation_seq']
     #administractor's certification 
 
+def image_path(image_id):
+    image_list_cache = 'image_list.txt'
+    image_list = ''
+    if os.path.isfile(image_list_cache):
+        with open(image_list_cache, 'rb') as f:
+            lines = f.readlines()
+        if len(lines) != 0:
+            for line in lines:
+                [id, url] = line.split('\t')
+                if int(id) == int(image_id):
+                    return url
+    url = 'https://mp.weixin.qq.com/cgi-bin/filepage'
+    get = {
+            'type':2, 
+            't':'media/img_list',
+    }
+    rep = transfer(url, get)
+    with open(image_list_cache, 'ab+') as f:
+        for image in rep['page_info']['file_item']:
+            print type(image['file_id']), type(image_id)
+            if image['file_id'] == int(image_id):
+                f.write('%d\t%s\n' %(image['file_id'], image['cdn_url'].replace('\/', '/')))
+                return image['cdn_url'].replace('\/', '/')
+    return None
 
 
 title = '''hello, wechat's gong zhong hao'''
@@ -167,7 +193,7 @@ if __name__ ==  '__main__':
     result = {}
     result['cover'] = upload_image_as_cover(os.path.join('res', 'qrcode_for_gh_de3d190f1f61_258.jpg'))
     result['appMsgId'] = add_message(result['cover'], title, content)
+    print image_path(result['cover'])
+    print result
     logout()
 
-
-    
