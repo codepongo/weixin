@@ -78,7 +78,7 @@ def ticket():
 
 
 
-def upload_image_as_cover(path):
+def upload_image(path):
     user, media = ticket()
     if user == None:
         return None
@@ -98,7 +98,7 @@ def upload_image_as_cover(path):
     return rep['content']
 
 
-def add_message(cover, title, content, digest='', author='', url=''):
+def add_message(cover, title, content, digest='', author='', source=''):
     url = 'https://mp.weixin.qq.com/cgi-bin/operate_appmsg'
     post = {
             'AppMsgId': '', 
@@ -110,7 +110,7 @@ def add_message(cover, title, content, digest='', author='', url=''):
             'digest0':digest,
             'author0':author,
             'fileid0':cover,
-            'sourceurl0':url,
+            'sourceurl0':source,
             'show_cover_pic0':0,
             'shortvideofileid0':'',
             'copyright_type0':0,
@@ -132,32 +132,17 @@ def send_mass_message(msg_id, gender=0, group_id=-1):
     rep = transfer(url, get)
     op = rep['operation_seq']
     #administractor's certification 
-
-def image_path(image_id):
-    image_list_cache = 'image_list.txt'
-    image_list = ''
-    if os.path.isfile(image_list_cache):
-        with open(image_list_cache, 'rb') as f:
-            lines = f.readlines()
-        if len(lines) != 0:
-            for line in lines:
-                [id, url] = line.split('\t')
-                if int(id) == int(image_id):
-                    return url
+def image_path():
     url = 'https://mp.weixin.qq.com/cgi-bin/filepage'
     get = {
             'type':2, 
             't':'media/img_list',
     }
     rep = transfer(url, get)
-    with open(image_list_cache, 'ab+') as f:
-        for image in rep['page_info']['file_item']:
-            print type(image['file_id']), type(image_id)
-            if image['file_id'] == int(image_id):
-                f.write('%d\t%s\n' %(image['file_id'], image['cdn_url'].replace('\/', '/')))
-                return image['cdn_url'].replace('\/', '/')
-    return None
-
+    id_path = {}
+    for image in rep['page_info']['file_item']:
+            id_path[image['file_id']] = image['cdn_url'].replace('\/', '/')
+    return id_path
 
 title = '''hello, wechat's gong zhong hao'''
 content = '''
@@ -189,11 +174,35 @@ now, the function of it:
 
 if __name__ ==  '__main__':
     import sys
+    import re
+    import markdown2
+    import anydbm
     token = login(sys.argv[1], sys.argv[2])
-    result = {}
-    result['cover'] = upload_image_as_cover(os.path.join('res', 'qrcode_for_gh_de3d190f1f61_258.jpg'))
-    result['appMsgId'] = add_message(result['cover'], title, content)
-    print image_path(result['cover'])
-    print result
+    if token == None:
+        print 'failure to login'
+        sys.exit(0)
+    imgs = anydbm.open('cache.db', 'c')
+    root = sys.argv[3]
+    source = 'http://cook.codepongo.com/' + sys.argv[4][:-len('.md')]
+    with open(os.path.join(root, sys.argv[4])) as f:
+        title = f.readline()
+        f.readline()
+        content = f.read()
+    for img in re.findall(re.compile(r"\!\[.*\]\((.*)\)"), content):
+        imgs[img] = upload_image(os.path.join(root, img))
+        cover = imgs[img]
+
+    server = image_path()
+    for local_path, local_id in imgs.items():
+        for server_id, server_path in server.items():
+            if server_id == int(local_id):
+                imgs[local_path] = server_path
+    
+    for k, v in imgs.items():
+        content = content.replace(k, v)
+    title = title.replace('<br/>', '')
+    content = markdown2.markdown(content).replace('<h2>', '<br /><br /><h2><b>').replace('</h2>', '</b></h2><br /><br />').encode('utf8')
+    add_message(cover, title, content, author='Zuo Haitao(codepongo)' source=source)
     logout()
+    os.remove('cache.db')
 
