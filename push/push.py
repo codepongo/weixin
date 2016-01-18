@@ -202,7 +202,7 @@ if __name__ ==  '__main__':
         content = content.replace(k, v)
     title = title.replace('<br/>', '')
     content = markdown2.markdown(content).replace('<h2>', '<br /><br /><h2><b>').replace('</h2>', '</b></h2><br /><br />').encode('utf8')
-    add_message(cover, title, content, author='Zuo Haitao(codepongo)' source=source)
+    add_message(cover, title, content, author='Zuo Haitao(codepongo)', source=source)
     logout()
     os.remove('cache.db')
 
