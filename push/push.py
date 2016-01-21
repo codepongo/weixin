@@ -144,33 +144,6 @@ def image_path():
             id_path[image['file_id']] = image['cdn_url'].replace('\/', '/')
     return id_path
 
-title = '''hello, wechat's gong zhong hao'''
-content = '''
-这个是猪火腿的公众号第一条消息。用于测试程序。
-<br />
-代码可以在https://github.com/codepongo/weixin可以找到。
-<br />
-目前，程序只能完成：
-<ul>
- <li>登陆，登出</li>
- <li>上传图片</li>
- <li>增加图文消息</li>
-</ul>
-<b>无法自动推送消息:(</b>
-<br />
-<br />
-Hi, this message is the first message from Codepongo's Gong Zhong Hao, and it is for testing the program.
-<br />
-The source code is hosted in https://github.com/codepongo/weixin.
-<br />
-now, the function of it:
-<ul>
-  <li>login and logout</li>
-  <li>upload image resource</li>
-  <li> add message with image to wechat's platform</li>
-</ul>
-<b>but, it has not publish the message yet. :(</b>
-'''
 
 if __name__ ==  '__main__':
     import sys
@@ -188,9 +161,14 @@ if __name__ ==  '__main__':
         title = f.readline()
         f.readline()
         content = f.read()
+    cover = None
     for img in re.findall(re.compile(r"\!\[.*\]\((.*)\)"), content):
+        # if the image is already in server, path is the image id
+        # the code does not process this situation :(
+        # i will fix it later.
         imgs[img] = upload_image(os.path.join(root, img))
-        cover = imgs[img]
+        if cover == None:
+            cover = imgs[img]
 
     server = image_path()
     for local_path, local_id in imgs.items():
