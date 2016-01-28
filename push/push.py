@@ -156,9 +156,13 @@ if __name__ ==  '__main__':
         sys.exit(0)
     imgs = anydbm.open('cache.db', 'c')
     root = sys.argv[3]
-    source = 'http://cook.codepongo.com/' + sys.argv[4][:-len('.md')]
+    if sys.argv[3].find('cook') == -1:
+        source = 'http://note.codepongo.com/article/' + sys.argv[4][:-len('.md')]
+    else:
+        source = 'http://cook.codepongo.com/' + sys.argv[4][:-len('.md')]
+
     with open(os.path.join(root, sys.argv[4])) as f:
-        title = f.readline()
+        title = f.readline()[:-1]
         f.readline()
         content = f.read()
     cover = None
@@ -178,7 +182,6 @@ if __name__ ==  '__main__':
     
     for k, v in imgs.items():
         content = content.replace(k, v)
-    title = title.replace('<br/>', '')
     content = markdown2.markdown(content).replace('<h2>', '<br /><br /><h2><b>').replace('</h2>', '</b></h2><br /><br />').encode('utf8')
     add_message(cover, title, content, author='Zuo Haitao(codepongo)', source=source)
     logout()
