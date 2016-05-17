@@ -25,7 +25,6 @@ def check_signature(signature, timestamp, nonce):
     l.sort()
     map(sha1.update, l)
     hashcode = sha1.hexdigest()
-    print hashcode
     if hashcode == signature:
         return True
     else:
