@@ -66,3 +66,5 @@ conf.py
 cookie.txt
 token.txt
 image_list.txt
+
+*.swo
