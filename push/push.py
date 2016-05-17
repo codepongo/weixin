@@ -175,15 +175,30 @@ if __name__ ==  '__main__':
             cover = imgs[img]
 
     server = image_path()
-    for local_path, local_id in imgs.items():
-        for server_id, server_path in server.items():
-            if server_id == int(local_id):
-                imgs[local_path] = server_path
+    # improve compatibility
+    if sys.platform == 'darwin':
+        for k in imgs.keys():
+            local_path = k
+            local_id = imgs[k]
+            for server_id, server_path in server.items():
+                if server_id == int(local_id):
+                    imgs[local_path] = server_path
+        for k in imgs.keys():
+            v = imgs[k]
+            content = content.replace(k, v)
+    else:
+        for local_path, local_id in imgs.items():
+            for server_id, server_path in server.items():
+                if server_id == int(local_id):
+                    imgs[local_path] = server_path
     
-    for k, v in imgs.items():
-        content = content.replace(k, v)
+        for k, v in imgs.items():
+            content = content.replace(k, v)
     content = markdown2.markdown(content).replace('<h2>', '<br /><br /><h2><b>').replace('</h2>', '</b></h2><br /><br />').encode('utf8')
     add_message(cover, title, content, author='Zuo Haitao(codepongo)', source=source)
     logout()
-    os.remove('cache.db')
+    if sys.platform == 'darwin':
+        os.remove('cache.db.db')
+    else:
+        os.remove('cache.db')
 
