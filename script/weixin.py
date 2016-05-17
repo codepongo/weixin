@@ -1,4 +1,4 @@
-#coding:utf-8
+#coding:utf8
 import sys
 import os
 sys.path.append(os.path.dirname(__file__))
@@ -6,6 +6,7 @@ import web
 import hashlib
 import xml.etree.ElementTree
 import time
+import tianqi
 try:
     import conf
     token = conf.token
@@ -15,7 +16,9 @@ except:
     token = 'test token'
     ico_path = './'
     res_path = './res'
-
+errmsg ='''无效的输入。
+获取天气信息：请尝试输入： 城市名+天气，如，北京天气
+'''
 def check_signature(signature, timestamp, nonce):
     sha1 = hashlib.sha1()
     l = [token, timestamp, nonce]
@@ -70,9 +73,23 @@ class server:
         content = content.encode('utf8')
         if content.find('天气'):
             city = content.replace('天气', '')
-            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()),"接收到的文字："+content)
+            w = tianqi.baidu(city)
+            today = w['data']['weather']['content']['today']
+            tomorrow = w['data']['weather']['content']['tomorrow']
+            reply = u'%s，天气%s，风力%s，温度%s，PM2.5:%s。%s，天气%s，风力%s，气温%s。' %(
+                    today['date'],
+                    today['condition'],
+                    today['wind'],
+                    today['temp'],
+                    today['pm25'],
+                    tomorrow['date'],
+                    tomorrow['condition'],
+                    tomorrow['wind'],
+                    tomorrow['temp'],
+                    )
+            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()),reply)
         else:
-            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), content)
+            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), errmsg)
 
         
 
