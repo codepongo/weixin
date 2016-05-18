@@ -76,7 +76,7 @@ class server:
             today = w['data']['weather']['content']['today']
             tomorrow = w['data']['weather']['content']['tomorrow']
             reply = u'''【%s】%s，天气%s，风力%s，温度%s，PM2.5:%s。%s，天气%s，风力%s，气温%s。
-            http://app.codepongo.com/weather''' %(
+http://app.codepongo.com/weather''' %(
                     w['data']['weather']['content']['city'],
                     today['date'],
                     today['condition'],
