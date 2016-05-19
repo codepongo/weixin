@@ -25,6 +25,9 @@ def post_text(content):
 if __name__ == '__main__':
     #authentication()
     post_text('北京天气')
+#    post_text('天气天气')
+#    post_text(u'manual天气'.encode('utf8'))
+#    post_text('天气热')
 
 
 
