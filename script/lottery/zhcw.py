@@ -109,7 +109,7 @@ class SSQ():
         html = urllib.urlopen(url).read()
         r = Parser().feed(html)
         if r != None and isinstance(r, list) and len(r) >=1 and r[0].has_key('numbers'):
-            return r[0]['numbers']
+            return r[0]
         else:
             return None
 if __name__ == '__main__':

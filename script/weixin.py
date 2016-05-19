@@ -81,11 +81,12 @@ class server:
 
     def lottery(self, content):
         if content == '双色球':
-            numbers = lottery.zhcw.SSQ().last()
-            if numbers == None:
+            r = lottery.zhcw.SSQ().last()
+            if r == None:
                 return ''
-            reply = ''.join( n + ' ' for n in numbers[:-1])
-            reply += '+ ' + numbers[-1]
+            numbers = ''.join( n + ' ' for n in r['numbers'][:-1])
+            numbers += '+ ' + r['numbers'][-1]
+            reply = '%s %s期：%s' % (r['publish'], r['issue'], numbers)
             return reply
         else:
             return ''
