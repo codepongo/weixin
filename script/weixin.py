@@ -7,6 +7,7 @@ import hashlib
 import xml.etree.ElementTree
 import time
 import tianqi
+import lottery
 try:
     import conf
     token = conf.token
@@ -17,7 +18,9 @@ except:
     ico_path = './'
     res_path = './res'
 errmsg ='''无效的输入。
-获取天气信息：请尝试输入： 城市名+天气，如，北京天气
+【获取天气信息】：请尝试输入： 城市名+天气，如，北京天气
+【获取最新双色球开奖结果】：请尝试输入： 双色球
+
 '''
 def check_signature(signature, timestamp, nonce):
     sha1 = hashlib.sha1()
@@ -69,12 +72,31 @@ class server:
         fromUser = req.find("FromUserName").text
         toUser = req.find("ToUserName").text
         content = content.encode('utf8')
+        for f in [self.weather, self.lottery]:
+            reply = f(content)
+            if reply != '':
+                return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()),reply)
+
+        return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), errmsg)
+
+    def lottery(self, content):
+        if content == '双色球':
+            numbers = lottery.zhcw.SSQ().last()
+            if numbers == None:
+                return ''
+            reply = ''.join( n + ' ' for n in numbers[:-1])
+            reply += '+ ' + numbers[-1]
+            return reply
+        else:
+            return ''
+
+    def weather(self, content):
         pos = content.find('天气')
         if -1 != pos and pos != 0: 
             city = content[:pos]
             w = tianqi.baidu(city)
             if not w['data']['weather'].has_key('content'):
-                return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), errmsg)
+                return ''
             today = w['data']['weather']['content']['today']
             tomorrow = w['data']['weather']['content']['tomorrow']
             reply = u'''【%s】%s，天气%s，风力%s，温度%s，PM2.5:%s。%s，天气%s，风力%s，气温%s。
@@ -90,9 +112,9 @@ http://app.codepongo.com/weather''' %(
                     tomorrow['wind'],
                     tomorrow['temp'],
                     )
-            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()),reply)
+            return reply
         else:
-            return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), errmsg)
+            return ''
 
         
 

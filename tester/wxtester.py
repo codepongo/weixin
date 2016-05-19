@@ -21,13 +21,20 @@ def authentication():
 
 def post_text(content):
     r = requests.post(url, data = msg % ('zhuhuotui', 'codepongo', int(time.time()), 'text', content, 1)) 
-    print r.text
+    return r.text
 if __name__ == '__main__':
     #authentication()
-    post_text('北京天气')
-#    post_text('天气天气')
-#    post_text(u'manual天气'.encode('utf8'))
-#    post_text('天气热')
+    case = [
+            '北京天气',
+            u'manual天气'.encode('utf8'),
+            '天气热',
+            '双色球', 
+            '双色球天气', 
+    ]
+    for c in case:
+        print c.decode('utf8')
+        print post_text(c)
+        print '-----'
 
 
 
