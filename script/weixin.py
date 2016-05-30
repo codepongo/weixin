@@ -87,12 +87,16 @@ class server:
                 return ''
             numbers = ''.join( n + ' ' for n in r['numbers'][:-1])
             numbers += '+ ' + r['numbers'][-1]
-            reply = '%s第%s期%s' % (r['publish'], r['issue'], numbers)
+            reply = '''
+%s第%s期
+%s''' % (r['publish'], r['issue'], numbers)
             return reply
         elif content == '大乐透':
             r = lottery.lottery_gov_cn.DLT().last()
             numbers = r['red'] + ' + ' + r['blue']
-            reply = '%s第%s期%s' % (r['publish'], r['issue'], numbers)
+            reply = '''
+%s第%s期
+%s'''' % (r['publish'], r['issue'], numbers)
             return reply
         else:
             return ''
