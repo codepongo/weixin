@@ -96,7 +96,7 @@ class server:
             numbers = r['red'] + ' + ' + r['blue']
             reply = '''
 %s第%s期
-%s'''' % (r['publish'], r['issue'], numbers)
+%s''' % (r['publish'], r['issue'], numbers)
             return reply
         else:
             return ''
