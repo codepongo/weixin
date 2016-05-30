@@ -1,3 +1,4 @@
+#coding:utf8
 import HTMLParser
 import urllib
 import copy
@@ -44,7 +45,7 @@ class ParserForLast(Parser):
     def handle_data(self, data):
         Parser.handle_data(self, data)
         if len(self.result) == 1:
-            raise Found, self.result[0]
+            raise Found, self.result
 
 class FirstPageParser(Parser):
     def __init__(self):
@@ -118,29 +119,33 @@ class SSQ():
         try:
             r = ParserForLast().feed(html)
         except Found, result:
-            return result
+            return result[0][0]
         if r != None and isinstance(r, list) and len(r) >=1 and r[0].has_key('numbers'):
             return r[0]
         else:
             return None
 
 if __name__ == '__main__':
-    #    issues = snatch()
+#    issues = snatch()
 #    save(issues)
-    import time
-    s = time.clock()
-    print SSQ().last()
-    e = time.clock()
-    print (e-s)/1000000
+#    import time
+#    s = time.clock()
+    r = SSQ().last()
+    numbers = ''.join( n + ' ' for n in r['numbers'][:-1])
+    numbers += '+ ' + r['numbers'][-1]
+    reply = '%s第%s期%s' % (r['publish'], r['issue'], numbers)
+    print reply.decode('utf8')
+#    e = time.clock()
+#    print (e-s)/1000000
 
 
-    s = time.clock()
-    url = 'http://kaijiang.zhcw.com/zhcw/html/ssq/list.html'
-    html = urllib.urlopen(url).read()
-    r = None
-    r = Parser().feed(html)
-    print r[0]
-    e = time.clock()
-    print (e-s)/1000000
+#    s = time.clock()
+#    url = 'http://kaijiang.zhcw.com/zhcw/html/ssq/list.html'
+#    html = urllib.urlopen(url).read()
+#    r = None
+#    r = Parser().feed(html)
+#    print r[0]
+#    e = time.clock()
+#    print (e-s)/1000000
 
 

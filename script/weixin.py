@@ -86,7 +86,7 @@ class server:
                 return ''
             numbers = ''.join( n + ' ' for n in r['numbers'][:-1])
             numbers += '+ ' + r['numbers'][-1]
-            reply = '%s第%s期：%s' % (r['publish'], r['issue'], numbers)
+            reply = '%s第%s期%s' % (r['publish'], r['issue'], numbers)
             return reply
         else:
             return ''
