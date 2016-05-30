@@ -20,6 +20,7 @@ except:
 errmsg ='''无效的输入。
 【获取天气信息】：请尝试输入： 城市名+天气，如，北京天气
 【获取最新双色球开奖结果】：请尝试输入： 双色球
+【获取最新大乐透开奖结果】：请尝试输入： 大乐透
 
 '''
 def check_signature(signature, timestamp, nonce):
