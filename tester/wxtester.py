@@ -30,6 +30,7 @@ if __name__ == '__main__':
             '天气热',
             '双色球', 
             '双色球天气', 
+            '大乐透',
     ]
     for c in case:
         print c.decode('utf8')
