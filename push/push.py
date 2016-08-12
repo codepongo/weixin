@@ -9,7 +9,7 @@ import poster
 import random
 import time
 
-token = None
+token = ''
 
 def login(email, password):
     poster.streaminghttp.register_openers()
@@ -33,11 +33,85 @@ def login(email, password):
     result = json.loads(rep)
 
     if 'base_resp' in result and result['base_resp']['ret'] == 0:
+        def assistant():
+            get = { 
+                    '1':'1'
+            }
+            post = {
+                    'action':'get_ticket',
+                    'auth':'ticket'
+            }
+            rep = transfer('https://mp.weixin.qq.com/misc/safeassistant', get, post, None)
+            return rep['ticket']
+        ticket = assistant()
+        if ticket == None:
+            return None
+
+        def qrconnect(t):
+            get = { 
+                    '1':'1'
+            }
+            post = {
+                    'appid':'wx3a432d2dbe2442ce',
+                    'scope':'snsapi_contact',
+                    'state':'0',
+                    'redirect_uri':'https://mp.weixin.qq.com',
+                    'login_type':'safe_center',
+                    'type':'json',
+                    'ticket':ticket,
+            }
+            def uuid(rep):
+                rep = json.loads(rep)
+                if rep.has_key('uuid'):
+                    return rep
+                return None
+
+            rep = transfer('https://mp.weixin.qq.com/safe/safeqrconnect', get, post, None, uuid)
+            if rep == None:
+                return None
+            return rep['uuid']
+        uuid = qrconnect(ticket)
+        if uuid == None:
+            return None
+        def qrcode(ticket, uuid):
+            get = {
+                    'ticket':ticket,
+                    'uuid':uuid,
+                    'action':'check',
+                    'type':'login',
+                    'auth':'ticket',
+            }
+            def qrcode(rep):
+                img = 'qr.jpg'
+                with open(img, 'wb') as qr:
+                    qr.write(rep)
+            return transfer('https://mp.weixin.qq.com/safe/safeqrcode', get, None, None, qrcode)
+        img = qrcode(ticket, uuid)
+        os.system('mspaint %s' % img)
+
+        def safeuuid(uuid):
+            get = {
+                'token':'',
+                'uuid':uuid,
+                'action':'json',
+                'type':'json',
+            }
+            #transfer('https://mp.weixin.qq.com/safe/safeuuid', get
+
         return result['redirect_url'].split("=")[-1]
 def logout():
     urllib2.urlopen('https://mp.weixin.qq.com/cgi-bin/logout?t=wxm-logoout')
 
-def transfer(url, get = None, post = None, header = None):
+def ack(rep):
+    rep = json.loads(rep)
+    if rep['base_resp']['ret'] != 0:
+        print url, '->', rep
+        return None
+    return rep
+
+
+
+def transfer(url, get = None, post = None, header = None, ack = ack):
     time.sleep(1)
     query = {'lang':'zh_CN', 'token':token} 
     if get != None:
@@ -61,11 +135,7 @@ def transfer(url, get = None, post = None, header = None):
         for k,v in header.items():
             req.add_header(k, v)
     rep = urllib2.urlopen(req).read()
-    rep = json.loads(rep)
-    if rep['base_resp']['ret'] != 0:
-        print url, '->', rep
-        return None
-    return rep
+    return ack(rep)
 
 
 def ticket():
