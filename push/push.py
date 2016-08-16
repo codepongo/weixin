@@ -8,6 +8,7 @@ import os
 import poster
 import random
 import time
+import subprocess
 
 token = ''
 
@@ -33,6 +34,8 @@ def login(email, password):
     result = json.loads(rep)
 
     if 'base_resp' in result and result['base_resp']['ret'] == 0:
+        
+        #buy ticket
         def assistant():
             get = { 
                     '1':'1'
@@ -46,8 +49,10 @@ def login(email, password):
         ticket = assistant()
         if ticket == None:
             return None
-
+        
+        # change the card
         def qrconnect(t):
+            url = 'https://mp.weixin.qq.com/safe/safeqrconnect'
             get = { 
                     '1':'1'
             }
@@ -60,58 +65,93 @@ def login(email, password):
                     'type':'json',
                     'ticket':ticket,
             }
-            def uuid(rep):
+            def uuid(url, rep):
                 rep = json.loads(rep)
                 if rep.has_key('uuid'):
                     return rep
                 return None
 
-            rep = transfer('https://mp.weixin.qq.com/safe/safeqrconnect', get, post, None, uuid)
+            rep = transfer(url , get, post, None, uuid)
             if rep == None:
                 return None
             return rep['uuid']
         uuid = qrconnect(ticket)
         if uuid == None:
             return None
+        #sequential number
+        #i don't know how to make it, but it must be made in client.
+        msgid = '407438052'
+        
+        #print the card
         def qrcode(ticket, uuid):
+            url = 'https://mp.weixin.qq.com/safe/safeqrcode'
             get = {
                     'ticket':ticket,
                     'uuid':uuid,
                     'action':'check',
                     'type':'login',
                     'auth':'ticket',
+                    'msgid':msgid,
             }
-            def qrcode(rep):
+            def qrcode(url, rep):
                 img = 'qr.jpg'
                 with open(img, 'wb') as qr:
                     qr.write(rep)
-            return transfer('https://mp.weixin.qq.com/safe/safeqrcode', get, None, None, qrcode)
+                return img
+            return transfer(url, get, None, None, qrcode)
         img = qrcode(ticket, uuid)
-        os.system('mspaint %s' % img)
 
+        #checking the card
         def safeuuid(uuid):
+            url = 'https://mp.weixin.qq.com/safe/safeuuid'
             get = {
-                'token':'',
-                'uuid':uuid,
-                'action':'json',
-                'type':'json',
-            }
-            #transfer('https://mp.weixin.qq.com/safe/safeuuid', get
+                    'timespam':str(time.time()).replace('.', ''),
+                    'token':'',
+                    }
+            post = {
+                    'token':'',
+                    'uuid':uuid,
+                    'action':'json',
+                    'type':'json',
+                    }                    
+            def pass_ack(url, resp):
+                resp = json.loads(resp)
+                if resp.has_key('code'):
+                    return resp['code']
+                return None
 
+            return transfer(url , get, post, None, pass_ack)
+        if sys.platform == 'win32':
+            subprocess.Popen('mspaint %s' % img)
+        else:
+            print 'could not open the qr image.'
+            sys.exit(0)
+        code = None
+        while code == None:
+            code = safeuuid(uuid)
+
+        os.remove(img)
+
+        #verify the account
+        def verify(email, msgid, code):
+            url = 'https://mp.weixin.qq.com/cgi-bin/securewxverify'
+            post = {
+                'token':'',
+                'code':code,
+                'account':email,
+                'operation_seq':msgid
+            }
+
+            def verify_ack(url, r):
+                return r
+            return transfer(url , None, post, None)
+        result = verify(email, msgid, code)
         return result['redirect_url'].split("=")[-1]
+
 def logout():
     urllib2.urlopen('https://mp.weixin.qq.com/cgi-bin/logout?t=wxm-logoout')
 
-def ack(rep):
-    rep = json.loads(rep)
-    if rep['base_resp']['ret'] != 0:
-        print url, '->', rep
-        return None
-    return rep
-
-
-
-def transfer(url, get = None, post = None, header = None, ack = ack):
+def transfer(url, get = None, post = None, header = None, ack = None):
     time.sleep(1)
     query = {'lang':'zh_CN', 'token':token} 
     if get != None:
@@ -135,8 +175,14 @@ def transfer(url, get = None, post = None, header = None, ack = ack):
         for k,v in header.items():
             req.add_header(k, v)
     rep = urllib2.urlopen(req).read()
-    return ack(rep)
-
+    if ack == None:
+        def ack(url, rep):
+            rep = json.loads(rep)
+            if rep['base_resp']['ret'] != 0:
+                print url, '->', rep
+                return None
+            return rep
+    return ack(url, rep)
 
 def ticket():
     rep = transfer('https://mp.weixin.qq.com/cgi-bin/message', get={'t':'message/list', 'count':20, 'day':0})
@@ -145,8 +191,6 @@ def ticket():
     user = rep['user_info']['user_name']
     media = rep['base_resp']['media_ticket']
     return user, media
-
-
 
 def upload_image(path):
     user, media = ticket()
