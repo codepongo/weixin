@@ -13,16 +13,7 @@ import subprocess
 token = ''
 
 def login(email, password):
-    poster.streaminghttp.register_openers()
     cookie = cookielib.LWPCookieJar('cookie.txt')
-### poster.streaminghttp.register_openers() ###
-### http://oldj.net/article/python-upload-file-via-form-post/
-#from poster.encode import multipart_encode
-#from poster.streaminghttp import StreamingHTTPHandler, StreamingHTTPRedirectHandler, StreamingHTTPSHandler
-#handlers = [StreamingHTTPHandler, StreamingHTTPRedirectHandler, StreamingHTTPSHandler]
-#opener = urllib2.build_opener(*handlers)
-#urllib2.install_opener(opener)
-###
     opener = poster.streaminghttp.register_openers()
     opener.add_handler(urllib2.HTTPCookieProcessor(cookie))
 
