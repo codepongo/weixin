@@ -114,6 +114,8 @@ def login(email, password):
             return transfer(url , get, post, None, pass_ack)
         if sys.platform == 'win32':
             subprocess.Popen('mspaint %s' % img)
+        elif sys.platform == 'darwin':
+            subprocess.Popen(['open', img])
         else:
             print 'could not open the qr image.'
             sys.exit(0)
