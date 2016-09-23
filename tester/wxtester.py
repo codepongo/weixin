@@ -25,16 +25,17 @@ def post_text(content):
 if __name__ == '__main__':
     #authentication()
     case = [
-            '北京天气',
-            u'manual天气'.encode('utf8'),
-            '天气热',
-            '双色球', 
-            '双色球天气', 
-            '大乐透',
+            u'北京天气',
+            u'manual天气',
+            u'天气热',
+            u'双色球', 
+            u'双色球天气', 
+            u'大乐透',
     ]
     for c in case:
-        print c.decode('utf8')
-        print post_text(c)
+        print c
+        x = post_text(c.encode('utf8'))
+        print x
         print '-----'
 
 

@@ -6,7 +6,7 @@ import web
 import hashlib
 import xml.etree.ElementTree
 import time
-import tianqi
+import weatherbroadcast
 import lottery
 try:
     import conf
@@ -81,6 +81,7 @@ class server:
         return web.template.render(os.path.join(os.path.dirname(__file__), 'templates')).replytext(fromUser,toUser,int(time.time()), errmsg)
 
     def lottery(self, content):
+        print content
         if content == '双色球':
             r = lottery.zhcw.SSQ().last()
             if r == None:
@@ -103,23 +104,22 @@ class server:
         pos = content.find('天气')
         if -1 != pos and pos != 0: 
             city = content[:pos]
-            w = tianqi.baidu(city)
-            if not w['data']['weather'].has_key('content'):
+            w = weatherbroadcast.baiduapi(city)
+            if w['location'] == '':
                 return ''
-            today = w['data']['weather']['content']['today']
-            tomorrow = w['data']['weather']['content']['tomorrow']
-            reply = u'''【%s】%s，天气%s，风力%s，温度%s，PM2.5:%s。%s，天气%s，风力%s，气温%s。
+            reply = u'''【%s】%s，天气%s，风力%s，温度%s，PM2.5:%s，生活指数:%s。%s，天气%s，风力%s，气温%s。
 http://app.codepongo.com/weather''' %(
-                    w['data']['weather']['content']['city'],
-                    today['date'],
-                    today['condition'],
-                    today['wind'],
-                    today['temp'],
-                    today['pm25'],
-                    tomorrow['date'],
-                    tomorrow['condition'],
-                    tomorrow['wind'],
-                    tomorrow['temp'],
+                    w['location'],
+                    w['date'],
+                    w['today']['weather'],
+                    w['today']['wind'],
+                    w['today']['temp'],
+                    w['today']['pm25'],
+                    w['today']['index'][:-2],
+                    w['tomorrow']['date'],
+                    w['tomorrow']['weather'],
+                    w['tomorrow']['wind'],
+                    w['tomorrow']['temp']
                     )
             return reply
         else:
